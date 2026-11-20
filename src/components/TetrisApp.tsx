@@ -5,6 +5,7 @@ import { SITE } from "@/config";
 import { TetrisEngine, type Action, type GameStatus } from "@/game/engine";
 import type { PieceType } from "@/game/pieces";
 import { BoardRenderer, drawPreview, readTheme, type Theme } from "@/game/renderer";
+import { dismissRecovery, initAuth, useAuth } from "@/lib/auth";
 import { sound, type SoundName } from "@/lib/sound";
 import { loadBool, loadNumber, saveBool, saveString } from "@/lib/storage";
 import dynamic from "next/dynamic";
@@ -14,6 +15,9 @@ import type { GameResult } from "./GameOverModal";
 const GameOverModal = dynamic(() => import("./GameOverModal").then((m) => m.GameOverModal), { ssr: false });
 const LeaderboardModal = dynamic(() => import("./LeaderboardModal").then((m) => m.LeaderboardModal), { ssr: false });
 const FeedbackModal = dynamic(() => import("./FeedbackModal").then((m) => m.FeedbackModal), { ssr: false });
+const AuthModal = dynamic(() => import("./AuthModals").then((m) => m.AuthModal), { ssr: false });
+const AccountModal = dynamic(() => import("./AuthModals").then((m) => m.AccountModal), { ssr: false });
+const ResetPasswordModal = dynamic(() => import("./AuthModals").then((m) => m.ResetPasswordModal), { ssr: false });
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
@@ -29,6 +33,7 @@ import {
   RotateCwIcon,
   SproutIcon,
   TrophyIcon,
+  UserIcon,
   VolumeIcon,
 } from "./icons";
 import styles from "./TetrisApp.module.css";
@@ -65,7 +70,10 @@ type ModalState =
   | { kind: "none" }
   | { kind: "gameOver"; result: GameResult }
   | { kind: "leaderboard"; highlight?: { id: string; rank: number }; back?: GameResult }
-  | { kind: "feedback" };
+  | { kind: "feedback" }
+  /** back: 게임 오버 화면에서 로그인하러 온 경우, 로그인 후 그 결과 화면으로 돌아간다 */
+  | { kind: "auth"; view?: "signIn" | "signUp"; back?: GameResult }
+  | { kind: "account" };
 
 interface Toast {
   id: number;
@@ -142,9 +150,20 @@ export function TetrisApp() {
     return () => mq.removeEventListener("change", onMq);
   }, []);
 
+  // 로그인 세션 복원 (supabase-js는 첫 화면 이후 비동기로 불러온다)
+  const auth = useAuth();
   useEffect(() => {
-    modalOpenRef.current = modal.kind !== "none";
-  }, [modal]);
+    void initAuth();
+  }, []);
+
+  useEffect(() => {
+    modalOpenRef.current = modal.kind !== "none" || auth.recovery;
+  }, [modal, auth.recovery]);
+
+  // 비밀번호 재설정 링크로 들어오면 게임을 멈춘다
+  useEffect(() => {
+    if (auth.recovery) engineRef.current?.pause();
+  }, [auth.recovery]);
 
   const showToast = useCallback((text: string, icon?: Toast["icon"]) => {
     const id = Date.now() + Math.random();
@@ -329,12 +348,16 @@ export function TetrisApp() {
   };
 
   const closeModal = () => {
-    if (modal.kind === "leaderboard" && modal.back) {
+    if ((modal.kind === "leaderboard" || modal.kind === "auth") && modal.back) {
       setModal({ kind: "gameOver", result: modal.back });
     } else {
       setModal({ kind: "none" });
     }
   };
+
+  const onSignedIn = useCallback(() => {
+    setModal((m) => (m.kind === "auth" && m.back ? { kind: "gameOver", result: m.back } : { kind: "none" }));
+  }, []);
 
   const { status } = snap;
 
@@ -361,6 +384,20 @@ export function TetrisApp() {
           <HeaderButton label="리더보드" onClick={() => openModal({ kind: "leaderboard" })}>
             <TrophyIcon />
           </HeaderButton>
+          {auth.status !== "unavailable" && (
+            <button
+              type="button"
+              className={styles.accountButton}
+              onClick={() => openModal(auth.status === "user" ? { kind: "account" } : { kind: "auth" })}
+              disabled={auth.status === "loading"}
+              aria-label={auth.status === "user" ? `내 계정 (${auth.nickname ?? ""})` : "로그인 또는 회원가입"}
+            >
+              <UserIcon width={20} height={20} />
+              <span className={styles.accountLabel}>
+                {auth.status === "user" ? (auth.nickname ?? "내 계정") : "로그인"}
+              </span>
+            </button>
+          )}
         </nav>
       </header>
 
@@ -491,16 +528,32 @@ export function TetrisApp() {
 
       <footer className={styles.footer}>{SITE.operatorNotice}</footer>
 
-      {modal.kind === "gameOver" && (
+      {modal.kind === "gameOver" && !auth.recovery && (
         <GameOverModal
           result={modal.result}
           onRestart={startGame}
-          onShowLeaderboard={(highlight) => setModal({ kind: "leaderboard", highlight, back: modal.result })}
+          onShowLeaderboard={() =>
+            setModal({ kind: "leaderboard", highlight: modal.result.submission, back: modal.result })
+          }
+          onRequestLogin={() => setModal({ kind: "auth", back: modal.result })}
+          onSubmitted={(submission) =>
+            setModal({ kind: "gameOver", result: { ...modal.result, submission } })
+          }
           onClose={() => setModal({ kind: "none" })}
         />
       )}
       {modal.kind === "leaderboard" && <LeaderboardModal highlight={modal.highlight} onClose={closeModal} />}
       {modal.kind === "feedback" && <FeedbackModal onClose={closeModal} />}
+      {modal.kind === "auth" && !auth.recovery && (
+        <AuthModal
+          initialView={modal.view}
+          reason={modal.back ? "로그인하면 방금 기록을 바로 등록할 수 있어요." : undefined}
+          onClose={closeModal}
+          onSignedIn={onSignedIn}
+        />
+      )}
+      {modal.kind === "account" && !auth.recovery && <AccountModal onClose={closeModal} />}
+      {auth.recovery && <ResetPasswordModal onClose={dismissRecovery} />}
     </div>
   );
 }

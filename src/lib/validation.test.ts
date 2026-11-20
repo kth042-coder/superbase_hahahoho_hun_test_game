@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { checkPlausibility, maxPlausibleScore } from "./plausibility";
-import { feedbackSchema, nicknameSchema, scoreSubmissionSchema } from "./validation";
+import { feedbackSchema, nicknameSchema, scoreSubmissionSchema, signUpSchema } from "./validation";
 
 describe("닉네임 검증", () => {
   it("앞뒤 공백 제거 후 2~12자", () => {
@@ -22,8 +22,29 @@ describe("닉네임 검증", () => {
   });
 });
 
+describe("회원가입 검증", () => {
+  const valid = { email: " Tofu@Example.com ", password: "tofu1234", passwordConfirm: "tofu1234", nickname: "바른두부" };
+  it("정상 값 통과, 이메일은 소문자·공백 제거", () => {
+    const r = signUpSchema.safeParse(valid);
+    expect(r.success).toBe(true);
+    expect(r.data?.email).toBe("tofu@example.com");
+  });
+  it("비밀번호 8자 이상 + 영문·숫자", () => {
+    expect(signUpSchema.safeParse({ ...valid, password: "ab12", passwordConfirm: "ab12" }).success).toBe(false);
+    expect(signUpSchema.safeParse({ ...valid, password: "abcdefgh", passwordConfirm: "abcdefgh" }).success).toBe(false);
+    expect(signUpSchema.safeParse({ ...valid, password: "12345678", passwordConfirm: "12345678" }).success).toBe(false);
+  });
+  it("비밀번호 확인 불일치 거부", () => {
+    expect(signUpSchema.safeParse({ ...valid, passwordConfirm: "tofu12345" }).success).toBe(false);
+  });
+  it("잘못된 이메일·닉네임 거부", () => {
+    expect(signUpSchema.safeParse({ ...valid, email: "tofu" }).success).toBe(false);
+    expect(signUpSchema.safeParse({ ...valid, nickname: "가" }).success).toBe(false);
+  });
+});
+
 describe("점수 제출 검증", () => {
-  const valid = { nickname: "바른두부", score: 1200, level: 1, lines_cleared: 4, duration_ms: 60_000 };
+  const valid = { score: 1200, level: 1, lines_cleared: 4, duration_ms: 60_000 };
   it("정상 값 통과", () => expect(scoreSubmissionSchema.safeParse(valid).success).toBe(true));
   it("0점·음수·소수 거부", () => {
     expect(scoreSubmissionSchema.safeParse({ ...valid, score: 0 }).success).toBe(false);

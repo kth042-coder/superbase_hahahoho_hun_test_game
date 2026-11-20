@@ -113,6 +113,12 @@ export const RotateCcwIcon = (p: P) => (
     <path d="M4 4v5h5" />
   </Icon>
 );
+export const UserIcon = (p: P) => (
+  <Icon {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+  </Icon>
+);
 export const HoldIcon = (p: P) => (
   <Icon {...p}>
     <rect x="4" y="7" width="16" height="13" rx="2" />

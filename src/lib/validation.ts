@@ -29,8 +29,37 @@ export const nicknameSchema = z
   .regex(NICKNAME_PATTERN, "한글, 영문, 숫자, 공백, _, - 만 사용할 수 있습니다.")
   .refine((v) => !containsProfanity(v), "사용할 수 없는 단어가 포함되어 있습니다.");
 
+/** PRD 2.4 회원 기능 */
+export const PASSWORD_MIN = 8;
+export const PASSWORD_MAX = 72;
+
+export const emailSchema = z.string().trim().toLowerCase().email("올바른 이메일 주소를 입력해 주세요.").max(254);
+
+export const passwordSchema = z
+  .string()
+  .min(PASSWORD_MIN, `비밀번호는 ${PASSWORD_MIN}자 이상이어야 합니다.`)
+  .max(PASSWORD_MAX, `비밀번호는 ${PASSWORD_MAX}자 이하여야 합니다.`)
+  .refine((v) => /[a-zA-Z]/.test(v) && /[0-9]/.test(v), "비밀번호에 영문과 숫자를 모두 포함해 주세요.");
+
+export const signUpSchema = z
+  .object({
+    email: emailSchema,
+    password: passwordSchema,
+    passwordConfirm: z.string(),
+    nickname: nicknameSchema,
+  })
+  .refine((v) => v.password === v.passwordConfirm, {
+    message: "비밀번호가 서로 일치하지 않습니다.",
+    path: ["passwordConfirm"],
+  });
+
+export const signInSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "비밀번호를 입력해 주세요."),
+});
+
+/** 점수 등록 — 닉네임은 로그인한 계정의 프로필에서 서버가 가져온다 */
 export const scoreSubmissionSchema = z.object({
-  nickname: nicknameSchema,
   score: z.number().int().positive().max(2_000_000_000),
   level: z.number().int().min(1).max(MAX_LEVEL),
   lines_cleared: z.number().int().min(0).max(1_000_000),

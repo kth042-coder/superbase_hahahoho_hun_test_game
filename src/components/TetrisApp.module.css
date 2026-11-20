@@ -46,7 +46,51 @@
 
 .headerActions {
   display: flex;
+  align-items: center;
   gap: 4px;
+}
+
+.accountButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  margin-left: 4px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--color-brand-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-brand-strong);
+  font-size: 14px;
+  font-weight: 700;
+  max-width: 160px;
+}
+
+.accountButton:hover:not(:disabled) {
+  background: #f3f8ec;
+}
+
+.accountButton:disabled {
+  opacity: 0.5;
+}
+
+.accountLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .accountButton {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+    border-color: transparent;
+  }
+
+  .accountLabel {
+    display: none;
+  }
 }
 
 /* ───────── 메인 (데스크톱 3열) ───────── */
@@ -470,5 +514,25 @@
 @media (max-width: 374px) {
   .touch {
     gap: 8px;
+  }
+}
+
+/* 360px 근처: 헤더 아이콘 5개 + 타이틀이 한 줄에 들어가도록 */
+@media (max-width: 400px) {
+  .headerActions {
+    gap: 0;
+  }
+
+  .brand {
+    gap: 6px;
+  }
+
+  .brandIcon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .title {
+    font-size: 18px;
   }
 }

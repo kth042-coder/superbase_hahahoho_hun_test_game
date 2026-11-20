@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { loadString, saveString } from "@/lib/storage";
-import { NICKNAME_MAX, nicknameSchema, firstIssue } from "@/lib/validation";
+import { useState } from "react";
+import { getAccessToken, useAuth } from "@/lib/auth";
 import { Modal } from "./Modal";
 import { SproutIcon } from "./icons";
 import styles from "./ui.module.css";
+
+export interface Submission {
+  id: string;
+  rank: number;
+}
 
 export interface GameResult {
   score: number;
@@ -13,41 +17,40 @@ export interface GameResult {
   lines: number;
   durationMs: number;
   isNewBest: boolean;
+  /** 등록 완료 정보 — 모달을 오가도 중복 등록되지 않도록 부모가 보관한다 */
+  submission?: Submission;
 }
 
 interface Props {
   result: GameResult;
   onRestart: () => void;
-  onShowLeaderboard: (highlight?: { id: string; rank: number }) => void;
+  onShowLeaderboard: () => void;
+  onRequestLogin: () => void;
+  onSubmitted: (submission: Submission) => void;
   onClose: () => void;
 }
 
-type SubmitState =
-  | { kind: "idle" }
-  | { kind: "submitting" }
-  | { kind: "done"; id: string; rank: number }
-  | { kind: "error"; message: string };
+type SubmitState = { kind: "idle" } | { kind: "submitting" } | { kind: "error"; message: string };
 
-export function GameOverModal({ result, onRestart, onShowLeaderboard, onClose }: Props) {
-  const [nickname, setNickname] = useState(() => loadString("nickname") ?? "");
+export function GameOverModal({ result, onRestart, onShowLeaderboard, onRequestLogin, onSubmitted, onClose }: Props) {
+  const auth = useAuth();
   const [state, setState] = useState<SubmitState>({ kind: "idle" });
-  const canSubmit = result.score > 0 && state.kind !== "submitting" && state.kind !== "done";
+  const done = result.submission;
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!canSubmit) return;
-    const parsed = nicknameSchema.safeParse(nickname);
-    if (!parsed.success) {
-      setState({ kind: "error", message: firstIssue(parsed.error) });
-      return;
-    }
+  async function submit() {
+    if (done || result.score <= 0 || state.kind === "submitting") return;
     setState({ kind: "submitting" });
     try {
+      const token = await getAccessToken();
+      if (!token) {
+        setState({ kind: "idle" });
+        onRequestLogin();
+        return;
+      }
       const res = await fetch("/api/scores", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          nickname: parsed.data,
           score: result.score,
           level: result.level,
           lines_cleared: result.lines,
@@ -55,12 +58,16 @@ export function GameOverModal({ result, onRestart, onShowLeaderboard, onClose }:
         }),
       });
       const body = (await res.json().catch(() => ({}))) as { id?: string; rank?: number; error?: string };
+      if (res.status === 401) {
+        setState({ kind: "error", message: body.error ?? "다시 로그인해 주세요." });
+        return;
+      }
       if (!res.ok || !body.id) {
         setState({ kind: "error", message: body.error ?? "기록을 저장하지 못했습니다." });
         return;
       }
-      saveString("nickname", parsed.data);
-      setState({ kind: "done", id: body.id, rank: body.rank ?? 0 });
+      setState({ kind: "idle" });
+      onSubmitted({ id: body.id, rank: body.rank ?? 0 });
     } catch {
       setState({ kind: "error", message: "네트워크 오류로 저장하지 못했습니다. 연결을 확인해 주세요." });
     }
@@ -88,49 +95,54 @@ export function GameOverModal({ result, onRestart, onShowLeaderboard, onClose }:
         </div>
       </dl>
 
-      {state.kind === "done" ? (
+      {done ? (
         <p className={styles.success} role="status">
-          기록을 등록했습니다. 현재 <strong>{state.rank.toLocaleString()}위</strong>입니다.
+          기록을 등록했습니다. 현재 <strong>{done.rank.toLocaleString()}위</strong>입니다.
         </p>
-      ) : (
-        <form className={styles.form} onSubmit={submit} noValidate>
-          <label className={styles.label} htmlFor="nickname">
-            닉네임 <span className={styles.hint}>(2~{NICKNAME_MAX}자)</span>
-          </label>
-          <div className={styles.inlineRow}>
-            <input
-              id="nickname"
-              className={styles.input}
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              maxLength={NICKNAME_MAX + 4}
-              autoComplete="nickname"
-              placeholder="닉네임 입력"
-              disabled={result.score === 0}
-              data-autofocus
-            />
-            <button type="submit" className={styles.primaryButton} disabled={!canSubmit}>
-              {state.kind === "submitting" ? "등록 중…" : state.kind === "error" ? "재시도" : "점수 등록"}
-            </button>
-          </div>
-          {result.score === 0 && <p className={styles.hint}>0점 기록은 등록할 수 없습니다.</p>}
+      ) : result.score === 0 ? (
+        <p className={styles.hint}>0점 기록은 등록할 수 없습니다.</p>
+      ) : auth.status === "user" ? (
+        <div className={styles.form}>
+          <p className={styles.hint}>
+            <strong className={styles.strongText}>{auth.nickname ?? "내 닉네임"}</strong> 이름으로 리더보드에 등록합니다.
+          </p>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={submit}
+            disabled={state.kind === "submitting"}
+            data-autofocus
+          >
+            {state.kind === "submitting" ? "등록 중…" : state.kind === "error" ? "재시도" : "점수 등록"}
+          </button>
           {state.kind === "error" && (
             <p className={styles.error} role="alert">
               {state.message}
             </p>
           )}
-        </form>
+        </div>
+      ) : auth.status === "unavailable" ? (
+        <p className={styles.hint}>점수 등록 기능이 아직 설정되지 않았습니다.</p>
+      ) : (
+        <div className={styles.form}>
+          <p className={styles.hint}>점수 등록은 회원만 할 수 있어요. 로그인하면 이 기록을 바로 등록할 수 있습니다.</p>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={onRequestLogin}
+            disabled={auth.status === "loading"}
+            data-autofocus
+          >
+            로그인하고 점수 등록
+          </button>
+        </div>
       )}
 
       <div className={styles.actions}>
         <button type="button" className={styles.secondaryButton} onClick={onRestart}>
           다시 하기
         </button>
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => onShowLeaderboard(state.kind === "done" ? { id: state.id, rank: state.rank } : undefined)}
-        >
+        <button type="button" className={styles.secondaryButton} onClick={onShowLeaderboard}>
           리더보드 보기
         </button>
       </div>

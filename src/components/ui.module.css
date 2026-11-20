@@ -283,6 +283,61 @@
   flex-wrap: wrap;
 }
 
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--color-board);
+}
+
+.tab,
+.tabActive {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-weight: 700;
+  color: var(--color-text-sub);
+}
+
+.tabActive {
+  background: var(--color-brand-strong);
+  color: #fff;
+}
+
+.notice {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(141, 198, 63, 0.2);
+  font-size: 14px;
+}
+
+.strongText {
+  color: var(--color-brand-strong);
+}
+
+.accountInfo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.accountInfo dt {
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.accountInfo dd {
+  margin: 0;
+  font-weight: 700;
+  word-break: break-all;
+}
+
 .honeypot {
   position: absolute;
   left: -10000px;

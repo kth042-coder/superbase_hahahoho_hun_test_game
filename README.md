@@ -26,8 +26,16 @@ npm run dev                  # http://localhost:3000
 ## Supabase 설정
 
 1. Supabase 프로젝트 생성
-2. SQL Editor에서 `supabase/migrations/20261120000000_init.sql` 실행
-3. Project Settings → API에서 값을 복사해 `.env.local`(로컬)과 Vercel Environment Variables(배포)에 등록
+2. SQL Editor에서 `supabase/migrations/`의 SQL을 **파일 이름 순서대로 하나씩** 실행 (각각 New query에서)
+   1. `20261120000000_init.sql` — 테이블, RLS
+   2. `20261120000100_grants.sql` — 테이블 권한
+   3. `20261120000200_auth_profiles.sql` — 회원 프로필, 가입 트리거, 점수-계정 연결
+3. Authentication → URL Configuration
+   - **Site URL:** 배포 주소 (예: `https://○○○.vercel.app`)
+   - **Redirect URLs:** `http://localhost:3000/**`, `http://localhost:3123/**`, `https://○○○.vercel.app/**`
+4. Project Settings → API에서 값을 복사해 `.env.local`(로컬)과 Vercel Environment Variables(배포)에 등록
+
+> Supabase 기본 메일 발송은 시간당 발송 수가 적게 제한됩니다. 실제 서비스에서는 Authentication → Emails에서 SMTP를 연결하세요.
 
 | 변수 | 범위 |
 | :--- | :--- |

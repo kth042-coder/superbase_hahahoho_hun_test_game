@@ -39,8 +39,10 @@ export async function checkAndRecord(
     .eq("ip_hash", ipHash)
     .eq("kind", kind)
     .gte("created_at", since);
+  // head 요청은 실패해도 error가 비고 count만 null로 올 수 있다
   if (error) throw error;
-  if ((count ?? 0) >= max) return false;
+  if (count === null) throw new Error("submission_log count unavailable");
+  if (count >= max) return false;
   const { error: insertError } = await db.from("submission_log").insert({ ip_hash: ipHash, kind });
   if (insertError) throw insertError;
   return true;
