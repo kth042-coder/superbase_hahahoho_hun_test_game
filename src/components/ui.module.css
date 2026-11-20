@@ -1,0 +1,427 @@
+/* PRD 9.5 컴포넌트 스타일 */
+.primaryButton,
+.secondaryButton {
+  height: 48px;
+  padding: 0 24px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 15px;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.primaryButton {
+  border: none;
+  background: var(--color-brand-strong);
+  color: #fff;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--color-brand-mid);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: var(--color-surface);
+  border: 1px solid var(--color-brand-strong);
+  color: var(--color-brand-strong);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: #f3f8ec;
+}
+
+.textButton {
+  border: none;
+  background: none;
+  color: var(--color-brand-strong);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 8px;
+}
+
+.iconButton {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-brand-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton:hover {
+  background: #f3f8ec;
+}
+
+.iconButton[aria-pressed="true"] {
+  background: var(--color-brand-light);
+}
+
+/* ───────── 모달 ───────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fade 0.15s ease-out;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modalWide {
+  max-width: 640px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-brand-strong);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.resultGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.resultGrid > div {
+  background: var(--color-board);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.resultGrid dt {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+.resultGrid dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.resultGrid > div:first-child dd {
+  color: var(--color-brand-strong);
+}
+
+/* ───────── 폼 ───────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldset {
+  border: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 6px;
+  padding: 0;
+}
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-sub);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.input {
+  height: 48px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 0;
+  border-color: var(--color-brand);
+}
+
+.inlineRow {
+  display: flex;
+  gap: 8px;
+}
+
+.inlineRow .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.counter {
+  margin: 0;
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.segment,
+.segmentActive {
+  flex: 1;
+  min-width: 90px;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.segment:focus-within,
+.segmentActive:focus-within {
+  outline: 2px solid var(--color-brand-strong);
+  outline-offset: 2px;
+}
+
+.segmentActive {
+  background: var(--color-brand-strong);
+  border-color: var(--color-brand-strong);
+  color: #fff;
+  font-weight: 700;
+}
+
+.error {
+  margin: 4px 0 0;
+  color: var(--color-danger-text);
+  font-size: 14px;
+}
+
+.success {
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f0f7e6;
+  color: var(--color-brand-strong);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ───────── 리더보드 ───────── */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 8px;
+  border-bottom: 1px solid #efede5;
+  white-space: nowrap;
+}
+
+.table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.nickname {
+  font-weight: 700;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+.mine td {
+  background: rgba(141, 198, 63, 0.2);
+}
+
+.rankLeaf {
+  display: inline-flex;
+}
+
+.leafGold {
+  color: var(--color-brand-strong);
+}
+
+.leafSilver {
+  color: var(--color-brand-mid);
+}
+
+.leafBronze {
+  color: var(--color-brand);
+}
+
+.myRank {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(141, 198, 63, 0.2);
+  font-weight: 700;
+  text-align: center;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+  text-align: center;
+  color: var(--color-text-sub);
+}
+
+.skeletonList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton {
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f1efe7 25%, #e7e4d9 50%, #f1efe7 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .hideNarrow {
+    display: none;
+  }
+
+  .modal {
+    padding: 20px 16px;
+  }
+
+  .inlineRow {
+    flex-direction: column;
+  }
+}
