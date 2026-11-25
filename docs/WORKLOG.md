@@ -12,7 +12,7 @@
 | :--- | :--- |
 | 서비스 | **바른 블록** — Next.js 16 웹 테트리스 + 리더보드 + 피드백 + 회원가입/로그인 |
 | 기획서 | `gemini-code-1795140232890.md` (PRD v1.3) |
-| GitHub | https://github.com/kth042-coder/superbase_hahahoho_hun_test_game (`main`, 최신 커밋 `c40b078`) |
+| GitHub | https://github.com/kth042-coder/superbase_hahahoho_hun_test_game (`main`, 최신 커밋 `d50a9d4`) |
 | 배포 | https://superbasehahahohohuntestgame-lv9g.vercel.app (Vercel, `main` 푸시 시 자동 배포) |
 | Vercel 환경 변수 | 4개 등록 완료 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `IP_HASH_SALT`) |
 | Supabase | 마이그레이션 3개 모두 적용 (`init` → `grants` → `auth_profiles`). 이메일 인증 **켜짐** |
@@ -88,5 +88,5 @@ npm run e2e:auth -- https://superbasehahahohohuntestgame-lv9g.vercel.app   # 배
 8. **작업 기록 체계:** 이 파일, `CLAUDE.md`, Stop 훅(`.claude/settings.json`) 추가, E2E 스크립트를 `scripts/e2e-auth.mjs`로 저장소에 편입.
 
 ### 2026-11-25 — 작업 기록 체계 커밋
-- 미커밋 상태였던 `CLAUDE.md`, `docs/WORKLOG.md`, `.claude/settings.json`·`.claude/hooks/worklog-check.mjs`(Stop 훅), `scripts/e2e-auth.mjs`, `package.json`(`e2e:auth` 스크립트)을 커밋·푸시.
+- 커밋 `d50a9d4` — 미커밋 상태였던 `CLAUDE.md`, `docs/WORKLOG.md`, `.claude/settings.json`·`.claude/hooks/worklog-check.mjs`(Stop 훅), `scripts/e2e-auth.mjs`, `package.json`(`e2e:auth` 스크립트)을 커밋·푸시.
 - 확인: `npm run check` 통과(단위 42개), 비밀값 검사 결과 없음. 앱 코드 변경 없음(e2e 스크립트의 비밀번호는 테스트용 임시 계정 값).
