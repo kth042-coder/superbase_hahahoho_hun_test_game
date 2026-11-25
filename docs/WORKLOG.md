@@ -114,6 +114,6 @@ npm run e2e:auth -- https://superbasehahahohohuntestgame-lv9g.vercel.app   # 배
 
 ### 2026-11-25 — 세션 간 연속 작업 자동화 (SessionStart/SessionEnd 훅)
 - 이유: 사용자 요청 — "모든 작업기록은 종료 시점 기준으로 저장해 두었다가 다음에 연속으로 작업할 수 있게 운영". 기존 Stop 훅은 파일 변경이 있을 때만 동작하고, 새 세션이 WORKLOG를 읽는 것도 CLAUDE.md 지시에만 의존했음.
-- 추가: `.claude/hooks/session-end.mjs`(종료 스냅샷 자동 기록), `.claude/hooks/session-start.mjs`(시작 시 요약 자동 주입), `.claude/settings.json`에 두 훅 등록, CLAUDE.md 갱신.
+- 커밋 `2a0585f`. 추가: `.claude/hooks/session-end.mjs`(종료 스냅샷 자동 기록), `.claude/hooks/session-start.mjs`(시작 시 요약 자동 주입), `.claude/settings.json`에 두 훅 등록, CLAUDE.md 갱신.
 - 확인: 두 스크립트를 직접 실행해 스냅샷 블록 생성·덮어쓰기, 컨텍스트 주입 JSON(약 3.9KB) 출력 확인. 실제 세션 종료/시작 시 발동은 다음 세션에서 확인 필요.
 - 메모: 이 세션에서 개발 서버(3123)가 메모리 부족으로 정리됐지만 node 프로세스(PID 25544)가 포트를 계속 점유 중이었음 (기존 함정과 동일).
