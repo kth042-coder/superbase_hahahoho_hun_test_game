@@ -2,7 +2,10 @@
 
 > 다음 작업을 시작할 때 **"현재 상태"와 "다음에 할 일"**부터 읽으세요.
 > 작업이 끝날 때마다 맨 아래 "작업 이력"에 항목을 추가하고, 위의 두 섹션을 최신으로 고칩니다.
-> (Stop 훅이 기록 누락을 막습니다 — `.claude/hooks/worklog-check.mjs`)
+> 자동화 훅 (`.claude/settings.json`):
+> - **SessionStart** (`session-start.mjs`): 세션 시작 시 이 파일의 현재 상태·스냅샷·다음에 할 일·최근 이력과 git 상태를 Claude에게 자동 주입
+> - **Stop** (`worklog-check.mjs`): 파일을 바꿨는데 이 파일을 갱신하지 않으면 응답 종료를 막음
+> - **SessionEnd** (`session-end.mjs`): 세션 종료 시점의 브랜치·커밋·푸시 여부·미커밋 파일을 아래 "마지막 세션 종료 스냅샷"에 자동 기록 (덮어씀)
 
 ---
 
@@ -12,7 +15,7 @@
 | :--- | :--- |
 | 서비스 | **바른 블록** — Next.js 16 웹 테트리스 + 리더보드 + 피드백 + 회원가입/로그인 |
 | 기획서 | `gemini-code-1795140232890.md` (PRD v1.3) |
-| GitHub | https://github.com/kth042-coder/superbase_hahahoho_hun_test_game (`main`, 최신 커밋 `d50a9d4`) |
+| GitHub | https://github.com/kth042-coder/superbase_hahahoho_hun_test_game (`main`, 최신 커밋은 아래 스냅샷 참고) |
 | 배포 | https://superbasehahahohohuntestgame-lv9g.vercel.app (Vercel, `main` 푸시 시 자동 배포) |
 | Vercel 환경 변수 | 4개 등록 완료 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `IP_HASH_SALT`) |
 | Supabase | 마이그레이션 3개 모두 적용 (`init` → `grants` → `auth_profiles`). 이메일 인증 **켜짐** |
@@ -25,6 +28,21 @@
 - 회원: 이메일+비밀번호 가입(고유 닉네임), 로그인, 인증 메일 재발송, 비밀번호 찾기/재설정, 로그아웃
 - 점수 등록: **회원 전용**, 서버가 토큰 검증 후 프로필 닉네임으로 저장(사칭 불가), 점수 타당성 검사, 레이트 리밋
 - 리더보드 Top 50, 피드백(쓰기 전용, 허니팟)
+
+---
+
+<!-- SESSION-SNAPSHOT:START -->
+## 마지막 세션 종료 스냅샷 (자동 기록 — SessionEnd 훅)
+
+- 종료 시각: 2026-11-25 13:02 (KST) · 종료 사유: test
+- 브랜치: `main` · 최신 커밋: `d8466e5 docs: WORKLOG 커밋 해시 반영`
+- 원격: 원격과 동일 (푸시 완료)
+- 커밋 안 된 파일 (WORKLOG 제외):
+  - `?? .claude/hooks/session-end.mjs`
+  - `?? .claude/hooks/session-start.mjs`
+
+> 다음 세션에서는 이 스냅샷과 "다음에 할 일"을 보고 이어서 작업한다. 커밋 안 된 파일이 있으면 먼저 정리 여부를 사용자에게 확인.
+<!-- SESSION-SNAPSHOT:END -->
 
 ---
 
@@ -50,6 +68,9 @@
 ---
 
 ## 알아두면 좋은 함정 (다시 겪지 않도록)
+
+- **SessionEnd 훅이 종료 때 WORKLOG.md를 고치므로, 새 세션 시작 시 WORKLOG.md가 "수정됨"으로 보이는 것이 정상** → 그 세션의 작업과 함께 커밋하면 된다.
+- **새로 추가한 훅은 이미 열려 있는 세션에는 바로 적용되지 않을 수 있음** → `/hooks`를 한 번 열거나 Claude Code를 재시작.
 
 - **Supabase 새 테이블은 GRANT가 자동으로 안 됨** → `permission denied (42501)`. 새 테이블을 만들면 `grant ... to anon / service_role`을 명시해야 한다 (`20261120000100_grants.sql` 참고).
 - **supabase-js의 `head: true` count 요청은 실패해도 `error`가 비고 `count`만 `null`일 수 있다** → `count === null`을 반드시 오류로 처리 (닉네임 확인·레이트 리밋에서 실제로 발생).
@@ -90,3 +111,9 @@ npm run e2e:auth -- https://superbasehahahohohuntestgame-lv9g.vercel.app   # 배
 ### 2026-11-25 — 작업 기록 체계 커밋
 - 커밋 `d50a9d4` — 미커밋 상태였던 `CLAUDE.md`, `docs/WORKLOG.md`, `.claude/settings.json`·`.claude/hooks/worklog-check.mjs`(Stop 훅), `scripts/e2e-auth.mjs`, `package.json`(`e2e:auth` 스크립트)을 커밋·푸시.
 - 확인: `npm run check` 통과(단위 42개), 비밀값 검사 결과 없음. 앱 코드 변경 없음(e2e 스크립트의 비밀번호는 테스트용 임시 계정 값).
+
+### 2026-11-25 — 세션 간 연속 작업 자동화 (SessionStart/SessionEnd 훅)
+- 이유: 사용자 요청 — "모든 작업기록은 종료 시점 기준으로 저장해 두었다가 다음에 연속으로 작업할 수 있게 운영". 기존 Stop 훅은 파일 변경이 있을 때만 동작하고, 새 세션이 WORKLOG를 읽는 것도 CLAUDE.md 지시에만 의존했음.
+- 추가: `.claude/hooks/session-end.mjs`(종료 스냅샷 자동 기록), `.claude/hooks/session-start.mjs`(시작 시 요약 자동 주입), `.claude/settings.json`에 두 훅 등록, CLAUDE.md 갱신.
+- 확인: 두 스크립트를 직접 실행해 스냅샷 블록 생성·덮어쓰기, 컨텍스트 주입 JSON(약 3.9KB) 출력 확인. 실제 세션 종료/시작 시 발동은 다음 세션에서 확인 필요.
+- 메모: 이 세션에서 개발 서버(3123)가 메모리 부족으로 정리됐지만 node 프로세스(PID 25544)가 포트를 계속 점유 중이었음 (기존 함정과 동일).

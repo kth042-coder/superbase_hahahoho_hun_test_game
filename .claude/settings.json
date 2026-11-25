@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.mjs\" 2>/dev/null || \"/c/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.mjs\"",
+            "timeout": 30,
+            "statusMessage": "이전 작업 기록 불러오는 중..."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
@@ -8,6 +20,17 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/worklog-check.mjs\" 2>/dev/null || \"/c/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/worklog-check.mjs\"",
             "timeout": 30,
             "statusMessage": "작업 기록 확인 중..."
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-end.mjs\" 2>/dev/null || \"/c/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-end.mjs\"",
+            "timeout": 30
           }
         ]
       }
