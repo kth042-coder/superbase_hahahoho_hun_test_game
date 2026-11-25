@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "e2e:auth": "node scripts/e2e-auth.mjs .env.local"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

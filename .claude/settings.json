@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/worklog-check.mjs\" 2>/dev/null || \"/c/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/worklog-check.mjs\"",
+            "timeout": 30,
+            "statusMessage": "작업 기록 확인 중..."
+          }
+        ]
+      }
+    ]
+  }
+}
